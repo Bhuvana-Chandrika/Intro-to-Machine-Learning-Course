@@ -1,0 +1,1074 @@
+---
+title: "STA 380 Take Home Exam"
+author: "Bhuvana Chandrika Kothapalli"
+EID: "bk24542"
+date: "7/30/2023"
+geometry: margin=0.75in
+fontsize: 10pt
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+options(repos = "https://cran.rstudio.com/", tinytex.verbose = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE)
+```
+
+## CHAPTER 2 PROBLEM 10
+
+#### This exercise involves the Boston housing data set
+
+```{r,echo=FALSE, include=FALSE}
+install.packages("ISLR2")
+library(ISLR2)
+library(class)
+```
+
+#### A - How many rows are in this data set? How many columns? What do the rows and columns represent?
+
+```{r,echo=FALSE, warning=FALSE}
+attach(Boston)
+n=dim(Boston)[1]
+print(n)
+m=dim(Boston)[2]
+print(m)
+?Boston
+```
+
+**No. of rows** = 506
+
+**No. of columns** = 13
+
+Each row represents a specific town or area in the Boston region, and each column represents a particular attribute or characteristic of the houses in that town.
+
+#### B - Make some pairwise scatterplots of the predictors (columns) in this data set. Describe your findings.
+
+```{r,echo=FALSE, fig.align='center' }
+pairs(Boston, col = "orange")
+
+par(mfrow = c(2, 2))
+
+plot(Boston$crim, Boston$medv,
+     xlab = 'Per Capita Crime Rate', 
+     ylab = 'medv', 
+     col = 'blue')
+
+
+
+plot(Boston$rm, Boston$medv,
+     xlab = 'Average number of rooms per dwelling', 
+     ylab = 'medv', 
+     col = 'blue')
+
+plot(Boston$lstat, Boston$medv,
+     xlab = 'Lower status of the population (percent)', 
+     ylab = 'medv', 
+     col = 'blue')
+
+plot(Boston$ptratio, Boston$medv,
+     xlab = 'Pupil-teacher ratio by town', 
+     ylab = 'medv', 
+     col = 'blue')
+```
+
+1.  **"rm"** (average number of rooms per dwelling) and **"medv"** (median value of owner-occupied homes): Typically, as the average number of rooms increases, the median value of homes also tends to increase.
+2.  As **crim** increases, the **medv** decreases. Demand for homes in more dangerous areas leads to a devaluation in the price of homes there.
+3.  As **lstat** increases, the **medv** decreases, s the lower status of population (percent) increases, the median value of owner-occupied homes drops.
+4.  It's tough to find relationship through this. A correlation matrix might be useful.
+
+#### C - Are any of the predictors associated with per capita crime rate?If so, explain the relationship.
+
+```{r,echo=FALSE, fig.align='center'}
+correlations <- cor(Boston)
+crime_correlations <- correlations[, "crim"]
+print(crime_correlations)
+par(mfrow = c(2, 2))
+plot(Boston$crim ~ Boston$zn,
+     log = 'xy',
+     col = 'steelblue')
+
+plot(Boston$crim ~ Boston$age,
+     log = 'xy',
+     col = 'steelblue')
+
+plot(Boston$crim ~ Boston$dis,
+     log = 'xy',
+     col = 'black')
+
+plot(Boston$crim ~ Boston$lstat,
+     log = 'xy',
+     col = 'black')
+```
+
+1.  **zn** here is negative which suggests that areas with a higher proportion of residential land zoned for large lots and more rooms per dwelling tend to have lower crime rates.
+2.  **"rad"** (index of accessibility to radial highways): This variable might also have a negative correlation with "crim." It's possible that areas with better highway accessibility are more connected and have lower crime rates due to higher surveillance.
+3.  As the lower status of the population (percent) increases, the Per Capita Crime Rate increases.
+
+#### D - Do any of the census tracts of Boston appear to have particularly high crime rates? Tax rates? Pupil-teacher ratios? Comment on the range of each predictor.
+
+```{r,echo=FALSE, fig.align='center'}
+par(mfrow = c(1, 3)) 
+hist(Boston$crim, breaks = 25, col = "orange", main = "Histogram of Per Capita Crime Rate")
+hist(Boston$tax, breaks = 25, col = "steelblue", main = "Histogram of Tax Rate")
+hist(Boston$ptratio, breaks = 25, col = "orange", main = "Histogram of Pupil-Teacher Ratio")
+```
+
+1.  There are very few Boston suburbs with high crime rates. Majority of observations align with a zero Per Capita Crime Rate.
+
+2.  **Per capita crime rate:** ranges from approximately 0 to around 89. The histogram shows that most census tracts have relatively low crime rates. However, there are a few tracts with exceptionally high crime rates. The range of crime rates suggests significant variation in crime rates across different areas in Boston.
+
+3.  **Tax Rate:** ranges from approximately 187 to 711 per \$10,000 The histogram indicates that the property tax rates are relatively spread out. The majority of census tracts have tax rates between 200 and 400 per \$10,000, while a few tracts have much higher tax rates, leading to the long right tail in the histogram.
+
+4.  **Pupil-Teacher ratio:** ranges from approximately 12 to 22. The histogram shows that most census tracts have pupil-teacher ratios around 21. There are a few tracts with lower pupil-teacher ratios (left tail) and some with higher ratios (right tail). The range suggests variations in the pupil-teacher ratios across different areas in Boston.
+
+#### E - How many of the census tracts in this data set bound the Charles river?
+
+```{r,echo=FALSE}
+nrow(subset(Boston, chas ==1))
+```
+
+**35** census tract bound the Charles river.
+
+#### F - What is the median pupil-teacher ratio among the towns in this data set?
+
+```{r,echo=FALSE }
+median(Boston$ptratio)
+summary(Boston$ptratio)
+```
+
+Median pupil-teacher ratio among the towns is **19.05**.
+
+#### G - Which census tract of Boston has lowest median value of owner-occupied homes? What are the values of the other predictors for that census tract, and how do those values compare to the overall ranges for those predictors? Comment on your findings.
+
+```{r,echo=FALSE }
+selection = Boston[order(Boston$medv), ]
+selection[1, ]
+```
+
+**399** has lowest median value of owner-occupied homes.
+
+```{r,echo=FALSE }
+summary(Boston)
+```
+
+1.  **crim:** Suburb 399 has a Per Capital Crime Rate that is approximately 10 times the average of Boston suburbs.
+2.  **age:** This suburb is above the average of Boston suburbs in regards to the proportion of owner-occupied units built prior to 1940
+3.  **tax:** This suburb is above the average of Boston suburbs in regards to the full-value property-tax rate per \$10,000
+4.  This suburb has more crime, less rooms per dwelling, low status of the population.
+
+#### H - In this data set, how many of the census tracts average more than seven rooms per dwelling? More than eight rooms per dwelling? Comment on the census tracts that average more than eight rooms per dwelling.
+
+```{r,echo=FALSE }
+x=sum(Boston$rm>7)
+y=sum(Boston$rm>8)
+print(x)
+print(y)
+summary(Boston)
+dwelling_value = subset(Boston, rm > 8)
+summary(dwelling_value)
+```
+
+1.  **64** census tracts average more than seven rooms per dwelling.
+2.  **13** census tracts average more than eight rooms per dwelling.
+3.  The census tracts that average more than eight rooms per dwelling has very low average Per Capita Crime Rate of 0.71879 (below Boston average)
+4.  The average proportion of owner-occupied units built prior to 1940 is 71.54.
+5.  Has an average median value of owner-occupied homes at \$44,000 (above the Boston average).
+6.  Has an average lower status of the population (percent) of 4.31 (below the Boston average).
+
+\newpage
+
+## CHAPTER 3 PROBLEM 15
+
+#### This problem involves the Boston data set, which we saw in the lab for this chapter. We will now try to predict per capita crime rate using the other variables in this data set. In other words, per capita crime rate is the response, and the other variables are the predictors.\*\*
+
+#### A - For each predictor, fit a simple linear regression model to predict the response. Describe your results. In which of the models is there a statistically significant association between the predictor and the response? Create some plots to back up your assertions.
+
+```{r,echo=FALSE, warning=FALSE }
+library(ISLR2)
+attach(Boston)
+install.packages("tidyverse")
+install.packages("broom")
+```
+
+```{r,echo=FALSE }
+
+library(tidyverse)
+library(broom)
+
+predictors <- 
+  Boston %>% 
+  dplyr::select(-crim) %>% 
+  colnames()
+
+simple_reg_crime <- function(predictor) {
+  formula_crim <- as.formula(str_c("crim ~ ", predictor))
+  lm(formula_crim, 
+     data = Boston)
+}
+
+regs_crim <- map(predictors, simple_reg_crime)
+
+(
+estimates_crim <- map(regs_crim, broom::tidy) %>%
+  bind_rows() %>%
+  filter(term != "(Intercept)") %>%
+  mutate(Significant = ifelse(p.value < 0.05, "Yes", "No"))
+)
+
+```
+
+```{r,echo=FALSE, fig.align='center' }
+Boston %>%
+  mutate_if(is.numeric, scale) %>% 
+  gather(-crim, key = "variable", value = "value") %>% 
+  ggplot(aes(value, crim), alpha = 0.05) +
+  geom_point() +
+  facet_wrap(~ variable) +
+  geom_smooth(method = "glm", color = "orange")
+```
+
+```{r,echo=FALSE, fig.align='center' }
+cor(Boston) %>%
+  corrplot::corrplot()
+```
+
+The regression models demonstrate that the response variable, crime rate ('crim'), exhibits statistically significant relationships with most of the predictor variables, except for **'chas'** (a binary variable that equals 1 if the suburb bounds the Charles River). For all other predictors, namely 'zn', 'indus', 'nox', 'rm', 'age', 'dis', 'rad', 'tax', and 'ptratio', there is strong evidence of a significant association with the crime rate, as indicated by their low p-values (\<\<0.05). These results suggest that these variables play a crucial role in explaining variations in the crime rate across different suburbs in the dataset. However, for 'chas', the p-value is greater than 0.05, indicating that there is no strong statistical evidence to establish a significant relationship between 'chas' and the crime rate.
+
+#### B - Fit a multiple regression model to predict the response using all of the predictors. Describe your results. For which predictors can we reject the null hypothesis H0 : betaj = 0?
+
+```{r,echo=FALSE, fig.align='center' }
+multi_reg <- lm(crim ~ ., data = Boston)
+summary(multi_reg)
+predicted_values<-fitted(multi_reg)
+plot(predicted_values,Boston$crim,pch=16,col="blue",main="Predicted vs. Observed",xlab="Predicted",ylab="Observed")
+abline(0,1,col="red")
+```
+
+When we use a multiple regression model now we can see that a lot of the variability can be modeled with a few of the above variables. This is probably because many of the variables are colinear. The ones that can reject the null hypothesis for are the zn, dis, rad, and medv.
+
+#### C - How do your results from (a) compare to your results from (b)? Create a plot displaying the univariate regression coefcients from (a) on the x-axis, and the multiple regression coefcients from (b) on the y-axis. That is, each predictor is displayed as a single point in the plot. Its coefcient in a simple linear regression model is shown on the x-axis, and its coefcient estimate in the multiple linear regression model is shown on the y-axis.
+
+```{r,echo=FALSE }
+install.packages("ggplot2")
+library(ggplot2)
+
+```
+
+```{r, fig.align='center'}
+multi_crim_estimates <- 
+  multi_reg %>% 
+  broom::tidy() %>% 
+  dplyr::select(term, estimate)
+
+estimates_crim %>% 
+  dplyr::select(term, estimate) %>% 
+  left_join(multi_crim_estimates, by = "term", suffix = c("_simple", "_multi")) %>%
+  ggplot(aes(estimate_simple, estimate_multi)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1, color = "blue")+
+  geom_text(aes(label = term), nudge_x = 1, nudge_y = 0.1)
+
+```
+
+Few of the coefficient points changed drastically. For example, `rm`, `chas` increased their value in the multiple linear regression while `nox` goes from +31 in the univariate case to -10 in the multivariate case. This probably means that nox correlates with other variables that have a positive relationship with crime, but when we hold the other variables constant, an increase in nox it's actually linked to less crime.
+
+#### D - Is there evidence of non-linear association between any of the predictors and the response? To answer this question, for each predictor X, ft a model of the form
+
+```{r,echo=FALSE }
+cubic_reg <- function(predictor) {
+  crimformula <- as.formula(str_c("crim ~ ", predictor, " + I(",predictor, "^2)", 
+                                   " + I(",predictor, "^3)"))
+  lm(crimformula, 
+     data = Boston)
+}
+
+regs_crim_cubic <- map(predictors, cubic_reg)
+
+(
+  estimates_crim_cubic <-
+    map(regs_crim_cubic, broom::tidy) %>%
+    bind_rows() %>%
+    filter(term != "(Intercept)") %>%
+    mutate(Significant = ifelse(p.value < 0.05,
+                                "Yes",
+                                "No")) %>% 
+    filter(Significant == "Yes")
+)
+```
+
+Yes, in many variables we can see evidence of non-linear relationship. Specifically, the predictors 'indus' , 'nox' , 'age', and 'dis' exhibit statistically significant cubic terms (X\^3) in their respective models. These findings suggest that the relationship between crime rate and these predictors cannot be adequately explained by simple linear models and that incorporating higher-order polynomial terms is essential to better capture the non-linear patterns in the data.
+
+\newpage
+
+## CHAPTER 6 PROBLEM 9
+
+#### We will now try to predict per capita crime rate in the College dataset.
+
+```{r, echo=FALSE, warning=FALSE}
+
+library(ISLR2)
+install.packages("glmnet")
+install.packages("pls")
+library(glmnet)
+library(pls)
+
+set.seed(11)
+dim(College) 
+str(College)
+ncol(College)
+colnames(College)
+```
+
+#### A - Split the data set into a training set and a test set.
+
+```{r,echo=FALSE, warning=FALSE}
+set.seed(123)
+train <-  sample(1:dim(College)[1], dim(College)[1] / 2)
+test <- -train
+
+train_college <- College[train, ]
+test_college <- College[test, ] 
+dim(College)
+nrow(train_college)  
+nrow(test_college)
+```
+
+#### B - Fit a linear model using least squares on the training set, and report the test error obtained.
+
+```{r,echo=FALSE }
+linear_model <- lm(Apps ~ ., data = train_college)
+summary(linear_model)
+linear_prediction <- predict(linear_model, test_college)
+linear_MSE <- mean((linear_prediction - test_college$Apps)^2); 
+print(paste("Test Error (Linear Model):", linear_MSE))
+```
+
+The MSE here is extremely large.
+
+#### C - Fit a ridge regression model on the training set, with lambda chosen by cross-validation. Report the test error obtained.
+
+```{r,echo=FALSE, fig.align='center' }
+
+train_matrix <- model.matrix(Apps ~ ., data = train_college)
+test_matrix <- model.matrix(Apps ~ ., data = test_college)
+grid = 10^seq(10, -2, length=100)
+
+ridge <- glmnet(train_matrix, train_college$Apps, alpha = 0, lambda = grid, thresh = 1e-12)
+plot(ridge)
+
+cv_ridge  <- cv.glmnet(train_matrix, train_college[, "Apps"], alpha=0)
+plot(cv_ridge)
+
+best_lambda_ridge <- cv_ridge$lambda.min
+best_lambda_ridge
+
+ridge_prediction <- predict(ridge, newx = test_matrix, s = best_lambda_ridge)
+ridge_MSE <- mean((ridge_prediction - test_college[, "Apps"])^2); 
+ridge_MSE
+
+
+```
+
+#### D - Fit a lasso model on the training set, with lambda chosen by cross-validation. Report the test error obtained, along with the number of non-zero coeffcient estimates.
+
+```{r,echo=FALSE, fig.align='center'  }
+
+lasso <- glmnet(train_matrix, train_college$Apps, alpha = 1, lambda = grid, thresh = 1e-12)
+plot(lasso)
+
+cv_lasso <- cv.glmnet(train_matrix, train_college[, "Apps"], alpha = 1)
+plot(cv_lasso)
+best_lambda_lasso <- cv_lasso$lambda.min
+best_lambda_lasso 
+
+lasso_prediction <- predict(lasso, newx = test_matrix, s = best_lambda_lasso)
+lasso_MSE <- mean((lasso_prediction - test_college[, "Apps"])^2)
+lasso_MSE
+
+num_non_zero_coef <- sum(coef(lasso, s = best_lambda_lasso) != 0)
+print(paste("Number of Non-Zero Coefficients:", num_non_zero_coef))
+
+```
+
+#### E - Fit a PCR model on the training set, with M chosen by cross-validation. Report the test error obtained, along with the value of M selected by cross-validation.
+
+```{r,echo=FALSE, fig.align='center' }
+library(pls)
+set.seed(1)
+
+pcr_fit <- pcr(Apps ~ ., data = train_college, scale = TRUE, validation = "CV")
+validationplot(pcr_fit, val.type = "MSEP")
+summary(pcr_fit)
+
+pcr_prediction <- predict(pcr_fit, test_college, ncomp = 7)
+pcr_MSE <- mean((test_college[, "Apps"] - pcr_prediction)^2)
+print(paste("PCR MSE:", pcr_MSE))
+
+```
+
+#### F - Fit a PLS model on the training set, with M chosen by cross-validation. Report the test error obtained, along with the valueof M selected by cross-validation.
+
+```{r,echo=FALSE, fig.align='center' }
+pls_fit <- plsr(Apps ~ ., data = train_college, scale = TRUE, validation = "CV")
+validationplot(pls_fit, val.type = "MSEP")
+
+pls_prediction <- predict(pls_fit, test_college, ncomp = 7)
+pls_MSE <- mean((test_college[, "Apps"] - (pls_prediction))^2); print(paste("PLS MSE:", pls_MSE))
+
+```
+
+#### G - comment on the results obtained. How accurately can we predict the number of college applications received? Is there much diference among the test errors resulting from these fve approaches?
+
+```{r,echo=FALSE, fig.align='center' }
+
+
+# Compute R-Squared for each model:
+average_test <- mean(test_college[, "Apps"])
+linear_r2 <- 1 - linear_MSE / mean((test_college[, "Apps"] - average_test)^2)
+ridge_r2 <- 1 - ridge_MSE / mean((test_college[, "Apps"] - average_test)^2)
+lasso_r2 <- 1 - lasso_MSE / mean((test_college[, "Apps"] - average_test)^2)
+pcr_r2 <- 1 - pcr_MSE / mean((test_college[, "Apps"] - average_test)^2)
+pls_r2 <- 1 - pls_MSE / mean((test_college[, "Apps"] - average_test)^2)
+
+
+cat("Linear Regression R-Squared:", linear_r2, "\n")
+cat("Ridge Regression R-Squared:", ridge_r2, "\n")
+cat("Lasso Regression R-Squared:", lasso_r2, "\n")
+cat("PCR R-Squared:", pcr_r2, "\n")
+cat("PLS R-Squared:", pls_r2, "\n")
+cat("Linear Regression Test MSE:", linear_MSE, "\n")
+cat("Ridge Regression Test MSE:", ridge_MSE, "\n")
+cat("Lasso Regression Test MSE:", lasso_MSE, "\n")
+cat("PCR Test MSE:", pcr_MSE, "\n")
+cat("PLS Test MSE:", pls_MSE, "\n")
+
+par(mfrow = c(1,1))
+ 
+barplot(c(linear_r2, ridge_r2, lasso_r2, pcr_r2, pls_r2), col="darkcyan", 
+        names.arg=c("OLS","Ridge", "Lasso", "PCR", "PLS"), main = "Test R-Squared",
+        ylab = "Test R-Squared", ylim = c(0,1))
+
+barplot(c(linear_MSE, ridge_MSE, lasso_MSE, pcr_MSE, pls_MSE), col="brown", 
+        names.arg=c("OLS","Ridge", "Lasso", "PCR", "PLS"), main = "Test MSE",
+        ylab = "Test MSE") 
+
+```
+
+Linear Regression and Lasso Regression have the highest R-squared values, indicating that they explain the most variance in the number of college applications received. These models perform slightly better in terms of explaining the variability in the response variable compared to Ridge Regression, PCR, and PLS.
+
+Test MSE values suggest that Linear Regression and Lasso Regression also have the lowest prediction errors on the test set, indicating better predictive accuracy compared to the other models. Specifically, Linear Regression has the lowest Test MSE, followed closely by Lasso Regression, while Ridge Regression, PCR, and PLS have higher Test MSE.
+
+PCR has the smallest amount of variation in the data and has the lowest accuracy. This is also reflected in the test MSE which is the highest for PCR.
+
+Hence, Linear Regression and Lasso Regression seem to provide the best trade-off between prediction accuracy and interpretability in this context.
+
+## CHAPTER 6 PROBLEM 11
+
+#### We will now try to predict per capita crime rate in the Boston data set.
+
+```{r,echo=FALSE, fig.align='center'  }
+library(MASS)
+install.packages("leaps")
+install.packages("glmnet")
+install.packages("pls")
+library(glmnet)
+library(pls)
+library(leaps)
+
+set.seed(123)
+```
+
+**Best Subset Selection**
+
+```{r,echo=FALSE, fig.align='center' }
+predict.regsubsets = function(object, newdata, id, ...) {
+    form = as.formula(object$call[[2]])
+    mat = model.matrix(form, newdata)
+    coefi = coef(object, id = id)
+    mat[, names(coefi)] %*% coefi
+}
+
+k = 10
+p = ncol(Boston) - 1
+folds = sample(rep(1:k, length = nrow(Boston)))
+cv.errors = matrix(NA, k, p)
+for (i in 1:k) {
+    best.fit = regsubsets(crim ~ ., data = Boston[folds != i, ], nvmax = p)
+    for (j in 1:p) {
+        pred = predict(best.fit, Boston[folds == i, ], id = j)
+        cv.errors[i, j] = mean((Boston$crim[folds == i] - pred)^2)
+    }
+}
+rmse.cv = sqrt(apply(cv.errors, 2, mean))
+plot(rmse.cv, pch = 19, type = "b")
+```
+
+```{r,echo=FALSE , warning = FALSE, fig.align='center' }
+which.min(rmse.cv)
+best_rmse=rmse.cv[which.min(rmse.cv)]
+best_rmse
+num_features_best_subset <- which.min(rmse.cv) + 1
+num_features_best_subset
+```
+
+**Lasso**
+
+```{r,echo=FALSE }
+x = model.matrix(crim ~ . - 1, data = Boston)
+y = Boston$crim
+cv.lasso = cv.glmnet(x, y, type.measure = "mse")
+plot(cv.lasso)
+```
+
+```{r}
+coef(cv.lasso)  
+
+lasso_rmse = sqrt(cv.lasso$cvm[cv.lasso$lambda == cv.lasso$lambda.1se])
+print(paste("Lasso rmse is ", lasso_rmse))
+
+num_features_lasso <- sum(coef(cv.lasso, s = "lambda.min") != 0)
+print(paste("No. of features used by lasso: ", num_features_lasso))
+
+```
+
+**Ridge**
+
+```{r,echo=FALSE}
+x = model.matrix(crim ~ . - 1, data = Boston)
+y = Boston$crim
+cv.ridge = cv.glmnet(x, y, type.measure = "mse", alpha = 0)
+plot(cv.ridge)
+```
+
+```{r,echo=FALSE}
+coef(cv.ridge)
+ridge_rmse=sqrt(cv.ridge$cvm[cv.ridge$lambda == cv.ridge$lambda.1se])
+print(paste("Ridge rmse is ",ridge_rmse))
+```
+
+**PCR Fit**
+
+```{r,echo=FALSE}
+pcr.fit = pcr(crim ~ ., data = Boston, scale = TRUE, validation = "CV")
+summary(pcr.fit)
+```
+
+```{r}
+pcr_rmse=sqrt(pcr.fit$validation$adj[12])
+print(paste("PCR rmse is ",pcr_rmse))
+```
+
+#### B - Propose a model (or set of models) that seem to perform well on this data set, and justify your answer. Make sure that you are evaluating model performance using validation set error, cross-validation, or some other reasonable alternative, as opposed to using training error.
+
+```{r}
+results <- rbind(best_rmse, lasso_rmse, ridge_rmse, pcr_rmse)
+results
+```
+
+Based on the RMSE values, PCR achieved the lowest RMSE, closely followed by the best subset selection. However, PCR used all the components, and best subset selection considered all features, which may indicate that they are slightly over fitting to the data.Hence, the best model for this data set is the PCR model, which uses 13 components and achieved an RMSE of 6.435. Although PCR improves predictive performance, it sacrifices feature interpretability, as it does not explicitly identify the most important predictors. The cross-validated RMSE value of 6.602 demonstrates the effectiveness of PCR in handling multicollinearity and noise, making it a valuable choice for predictive modeling in this analysis.
+
+#### C - Does your chosen model involve all of the features in the dataset? Why or why not?
+
+The chosen model, Principal Component Regression (PCR), involves all the features in the data set as it constructs principal components using all the original features. This approach reduces the dimensionality of the data while capturing the underlying patterns.
+
+\newpage
+
+## CHAPTER 8 PROBLEM 8
+
+#### In the lab, a classifcation tree was applied to the Carseats data set after converting Sales into a qualitative response variable. Now we will seek to predict Sales using regression trees and related approaches, treating the response as a quantitative variable.
+
+```{r,echo=FALSE }
+library(ISLR)
+library(tree)
+install.packages("BART")
+library(BART)
+attach(Carseats)
+```
+
+#### A - Split the data set into a training set and a test set.
+
+```{r,echo=FALSE}
+set.seed(456)
+train <- sample(1:nrow(Carseats), nrow(Carseats)/3)
+Carseats.train <- Carseats[train, ]
+Carseats.test <- Carseats[-train, ]
+y.test <- Carseats.test$Sales
+dim(Carseats)
+nrow(Carseats.train)  
+nrow(Carseats.test)
+
+```
+
+#### B - Fit a regression tree to the training set. Plot the tree, and interpret the results. What test MSE do you obtain?
+
+```{r, echo=FALSE}
+car.tree <- tree(Sales ~ ., data=Carseats.train)
+summary(car.tree)
+```
+
+```{r,echo=FALSE}
+plot(car.tree)
+text(car.tree, pretty=0)
+```
+
+```{r, echo=FALSE}
+yhat <- predict(car.tree, newdata=Carseats.test)
+x=mean((yhat - y.test)^2)
+print(paste("The test error is", x))
+```
+
+#### C - Use cross-validation in order to determine the optimal level of tree complexity. Does pruning the tree improve the test MSE?
+
+```{r,echo=FALSE, fig.align='center' }
+cv.Carseats <- cv.tree(car.tree)
+plot(cv.Carseats$size, cv.Carseats$dev, type='b')
+```
+
+```{r,echo=FALSE, fig.align='center'  }
+prune.Carseats <- prune.tree(car.tree, best=11)
+plot(prune.Carseats)
+text(prune.Carseats, pretty=0)
+```
+
+```{r}
+yhat <- predict(prune.Carseats, Carseats.test)
+y=mean((yhat-y.test)^2)
+print(paste("Test error after pruning is",y))
+```
+
+Pruning resulted in higher MSE.
+
+#### D - Use the bagging approach in order to analyze this data. What test MSE do you obtain? Use the importance() function to determine which variables are most important?
+
+```{r,echo=FALSE}
+require(randomForest)
+bag.Carseats <- randomForest(Sales ~., data=Carseats.train, mtry=10, importance=TRUE)
+yhat.bag <- predict(bag.Carseats, newdata=Carseats.test)
+x=mean((yhat.bag-y.test)^2)
+print(paste("Bagging decreased the test MSE to",x))
+```
+
+```{r,echo=FALSE}
+importance(bag.Carseats)
+```
+
+```{r,echo=FALSE }
+varImpPlot(bag.Carseats)
+```
+
+The two most important variables are ShelveLoc and Price. Age, Competitor price, and advertising budget also appear to have an effect, but all other variables seem to be less important
+
+#### E - Use random forests to analyze this data. What test MSE do you obtain? Use the importance() function to determine which variables are most important. Describe the effect of m, the number of variables considered at each split, on the error rate obtained.
+
+```{r,echo=FALSE }
+rf.Carseats <- randomForest(Sales~., data=Carseats.train, mtry=floor((ncol(Carseats)-1)/3),importance=TRUE)
+yhat.rf <- predict(rf.Carseats, newdata = Carseats.test)
+x=mean((yhat.rf-y.test)^2)
+print(paste("Test error for Random forest is",x))
+```
+
+When using p/3 variables at each node in random forest, we obtain a lower test MSE than by bagging.
+
+```{r,echo=FALSE}
+importance(rf.Carseats)
+```
+
+```{r,echo=FALSE, fig.align='center' }
+varImpPlot(rf.Carseats)
+```
+
+The two most important variables are ShelveLoc and Price. These are the same variables that were most important in bagging.
+
+#### F - Now analyze the data using BART, and report your results.
+
+```{r, echo=FALSE}
+
+library(BART)
+
+set.seed(456)
+
+x_train <- Carseats.train[, names(Carseats.train) != "Sales"]
+y_train <- Carseats.train$Sales
+x_test <- Carseats.test[, names(Carseats.test) != "Sales"]
+y_test <- Carseats.test$Sales
+
+bart_model <- gbart(x_train, y_train, x.test = x_test)
+
+yhat_bart <- bart_model$yhat.test.mean
+
+test_error <- mean((y_test - yhat_bart)^2)
+
+print(paste("Test error for BART model is",test_error))
+```
+
+Comparing the test error rates, the BART model has the lowest test error, indicating that it performs better than the other models on this particular dataset.
+
+## CHAPTER 8 PROBLEM 11
+
+#### This question uses the Caravan data set.
+
+#### A - Create a training set consisting of the frst 1,000 observations,and a test set consisting of the remaining observations.
+
+```{r, echo=FALSE, warning=FALSE}
+library(ISLR)
+library(gbm)
+
+data("Caravan")
+
+Caravan$Purchase <- ifelse(Caravan$Purchase == "Yes", 1, 0)
+
+set.seed(1)
+train <- 1:1000
+Caravan.train <- Caravan[train, ]
+Caravan.test <- Caravan[-train, ]
+nrow(Caravan.train)
+nrow(Caravan.test)
+any(sapply(Caravan, function(x) any(!is.finite(x))))
+
+```
+
+#### B - Fit a boosting model to the training set with Purchase as the response and the other variables as predictors. Use 1,000 trees,and a shrinkage value of 0.01. Which predictors appear to be the most important?
+
+```{r, echo=FALSE}
+
+boost.caravan <- gbm(Purchase ~ ., data = Caravan.train, distribution = "gaussian", n.trees = 1000, shrinkage = 0.01)
+
+summary(boost.caravan)
+
+
+```
+
+"PPERSAUT" and "MKOOPKLA" appear to be the two most important variables.
+
+#### C - Use the boosting model to predict the response on the test data.Predict that a person will make a purchase if the estimated probability of purchase is greater than 20 %. Form a confusion matrix. What fraction of the people predicted to make a purchase do in fact make one? How does this compare with the results obtained from applying KNN or logistic regression to this dataset?
+
+```{r, echo=FALSE}
+
+probs.test <- predict(boost.caravan, Caravan.test, n.trees = 1000, type = "response")
+pred.test <- ifelse(probs.test > 0.2, 1, 0)
+conf_matrix <- table(Caravan.test$Purchase, pred.test)
+conf_matrix
+```
+
+```{r, echo=FALSE}
+true_positive_rate <- conf_matrix[2,2 ] / sum(conf_matrix[, 2])
+true_positive_rate
+```
+
+About 21.5% of people predicted to make purchase actually end up making one.
+
+#### Logistic Regression
+
+```{r, echo=FALSE}
+logit.caravan <- glm(Purchase ~ ., data = Caravan.train, family = "binomial")
+probs.test2 <- predict(logit.caravan, Caravan.test, type = "response")
+
+
+pred.test2 <- ifelse(probs.test > 0.2, 1, 0)
+
+conf_matrix_logit <- table(Caravan.test$Purchase, pred.test2)
+conf_matrix_logit
+
+```
+
+```{r, echo=FALSE}
+true_positive_rate_logit <- conf_matrix_logit[2, 2] / sum(conf_matrix_logit[, 2])
+print(paste("True Positive Rate for Logistic Regression Model:", true_positive_rate_logit))
+```
+
+For logistic regression, the fraction of people predicted to make a purchase that in fact make one is again 0.2156863.
+
+#### KNN
+
+```{r, echo=FALSE}
+
+library(class)
+
+
+# Train the KNN model with k=5 (you can experiment with different k values)
+knn_model <- knn(train = as.matrix(Caravan.train[, -1]), test = as.matrix(Caravan.test[, -1]), cl = Caravan.train$Purchase, k = 5)
+
+# Form a confusion matrix for KNN
+conf_matrix_knn <- table(Caravan.test$Purchase, knn_model)
+
+
+print("Confusion Matrix (KNN Model):")
+print(conf_matrix_knn)
+# Calculate True Positive Rate (Recall) for KNN
+
+
+```
+
+```{r, echo=FALSE}
+true_positive_rate_knn <- conf_matrix_knn[2, 2] / sum(conf_matrix_knn[, 2])
+print(paste("True Positive Rate for KNN Model:", true_positive_rate_knn))
+```
+
+Here, Boosting and Logistic Regression have same true positive rates which suggests that they have similar performance in correctly capturing positive instances and avoiding false negatives where as KNN performs very poorly here.
+
+\newpage
+
+## CHAPTER 10 PROBLEM 7
+
+#### Fit a neural network to the Default data. Use a single hidden layer with 10 units, and dropout regularization. Have a look at Labs 10.9.1--10.9.2 for guidance. Compare the classifcation performance of your model with that of linear logistic regression.
+
+```{r, echo=FALSE}
+library(ISLR2)
+install.packages("keras")
+install.packages("tensorflow")
+library(keras)
+library(tensorflow)
+summary(Default)
+```
+
+```{r}
+n <- nrow(Default)
+n
+set.seed(13)
+ntest <- trunc(n / 3)
+testid <- sample(1:n, ntest)
+y_test <- Default$default[testid] == 'Yes'
+```
+
+#### Logistic Regression Model
+
+```{r}
+log.reg <- glm(default~student+balance+income,family="binomial",data=Default[-testid,])
+log.pred <- predict(log.reg, data=Default[testid,], type='response') > 0.5
+accuracy <- mean(log.pred == y_test)
+accuracy
+```
+
+Here, logistic regression model performed well on the validation set with about 95% accuracy.
+
+#### Fitting a neural network
+
+```{r}
+x <-  model.matrix(default ~. -1, data=Default)
+
+x_train <- x[-testid,]
+g_train <- Default$default[-testid]=='Yes'
+
+x_test <- x[testid,]
+g_test <- Default$default[testid] == 'Yes'
+
+modnn <- keras_model_sequential() %>% 
+  layer_dense(units=10, activation='relu', input_shape=ncol(x)) %>%
+  layer_dropout(rate=0.4) %>% 
+  layer_dense(units = 1, activation='sigmoid')
+```
+
+#### Compiling the model
+
+```{r, fig.align='center' }
+modnn %>% compile(
+  optimizer=optimizer_rmsprop(), 
+  loss='binary_crossentropy', 
+  metrics='accuracy')
+```
+
+#### Fitting the model to the data
+
+```{r}
+history <- modnn %>% fit(
+  x = x_train, 
+  y = g_train, 
+  epochs=30, 
+  batch_size=128)
+```
+
+#### Checking the model accuracy
+
+```{r}
+pred <- predict(modnn, x_test) > 0.5
+accuracy <- mean(pred == g_test)
+print(paste("The accuracy obtained through NN is",accuracy))
+```
+
+The neural network with a single hidden layer with 10 units and dropout regularization demonstrated superior classification performance on the "Default" dataset compared to the linear logistic regression model. The neural network achieved an accuracy of approximately **96.25%** on the test set, while the linear logistic regression model achieved an accuracy of approximately **95.16%**. This higher accuracy of the neural network indicates its better ability to capture complex patterns and non-linear relationships within the data, making it more effective for the binary classification task of predicting whether a customer will default on their credit card payments or not.
+
+\newpage
+
+## PROBLEM 1: BEAUTY PAYS!
+
+#### - Professor Daniel Hamermesh from UT's economics department has been studying the impact of beauty in labor income (yes, this is serious research!!). First, watch the following video: <http://thedailyshow.cc.com/videos/37su2t/ugly-people-prejudice> It turns out this is indeed serious research and Dr. Hamermesh has demonstrated the effect of beauty into income in a variety of different situations. Here's an example: in the paper "Beauty in the Classroom" they showed that "...instructors who are viewed as better looking receive higher instructional ratings" leading to a direct impact in the salaries in the long run. By now, you should know that this is a hard effect to measure. Not only one has to work hard to figure out a way to measure "beauty" objectively (well, the video said it all!) but one also needs to "adjust for many other determinants" (gender, lower division class, native language, tenure track status). So, Dr. Hamermesh was kind enough to share the data for this paper with us. It is available in our class website in the file "BeautyData.csv". In the file you will find, for a number of UT classes, course ratings, a relative measure of beauty for the instructors, and other potentially relevant variables.
+
+```{r, echo=FALSE}
+library(readr)
+library(dplyr)
+library(stats)
+library(readr)
+library(ggplot2)
+```
+
+#### - 1. Using the data, estimate the effect of "beauty" into course ratings. Make sure to think about the potential many "other determinants". Describe your analysis and your conclusions
+
+```{r, echo=FALSE, warning=FALSE, fig.align='center' }
+beauty_data <- read_csv("BeautyData.csv")
+
+str(beauty_data)
+
+model_1 <- lm(CourseEvals ~ BeautyScore + female + lower + nonenglish + tenuretrack, data = beauty_data)
+
+summary(model_1)
+
+correlations <- cor(beauty_data[, c("CourseEvals", "BeautyScore", "female", "lower", "nonenglish", "tenuretrack")])
+cor_data <- as.data.frame(as.table(correlations))
+colnames(cor_data) <- c("Variable1", "Variable2", "Correlation")
+
+cor_plot <- ggplot(data = cor_data, aes(x = Variable1, y = Variable2)) +
+  geom_tile(aes(fill = Correlation), color = "white") +
+  scale_fill_gradient2(low = "darkgreen", mid = "white", high = "orange", midpoint = 0) +
+  geom_text(aes(label = round(Correlation, 2)), size = 3) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        legend.position = "bottom",
+        legend.direction = "horizontal") +
+  labs(title = "Correlation Chart",
+       subtitle = "Correlation coefficients between CourseEvals, BeautyScore, and other variables")
+
+# Print the correlation plot
+print(cor_plot)
+
+
+
+```
+
+From the above data, we can see that "beauty" has a statistically significant positive effect on course ratings. For every one-unit increase in BeautyScore, the course rating increases by approximately 0.30415 points, on average, while keeping all other variables constant.
+
+Furthermore, the analysis also reveals the importance of other determinants in influencing course ratings. Female instructors tend to receive lower ratings and lower division classes, courses taught in languages other than English, and tenure track status have negative impacts on course ratings.
+
+#### 2. In his paper, Dr. Hamermesh has the following sentence: "Disentangling whether this outcome represents productivity or discrimination is, as with the issue generally, probably impossible". Using the concepts we have talked about so far, what does he mean by that?
+
+In his research paper, Dr. Hamermesh's statement highlights the complexity and challenges in determining the true driving forces behind the observed relationship between "beauty" and course ratings. The difficulty lies in disentangling whether the positive effect of "beauty" on ratings is primarily due to instructors' actual productivity or if it stems from potential discrimination based on appearance.
+
+Measuring beauty is inherently subjective, making it challenging to isolate its objective impact on course ratings without potential biases. Additionally, the presence of various confounding factors, such as teaching methods, communication skills, and other instructor characteristics, can influence both "beauty" and course ratings, further complicating the analysis.
+
+Moreover, the lack of controlled experiments and the influence of cultural and social norms on perceptions of beauty add to the intricacy. All these factors together make it challenging to definitively attribute the observed effect to either productivity or discrimination. Consequently, Dr. Hamermesh suggests that arriving at a conclusive answer is "probably impossible," underscoring the need for cautious interpretation and further research to understand the multifaceted relationship between beauty and course evaluations.
+
+\newpage
+
+## PROBLEM 2: HOUSING PRICE STRUCTURE
+
+#### The file MidCity.xls, available on the class website, contains data on 128 recent sales of houses in a town. For each sale, the file shows the neighborhood in which the house is located, the number of offers made on the house, the square footage, whether the house is made out of brick, the number of bathrooms, the number of bedrooms, and the selling price. Neighborhoods 1 and 2 are more traditional whereas 3 is a more modern, newer and more prestigious part of town. Use regression models to estimate the pricing structure of houses in this town and answer the following questions:
+
+#### 1.Is there a premium for brick houses everything else being equal?
+
+```{r,echo=FALSE, warning=FALSE}
+
+MidCity_data <- read.csv("MidCity.csv")
+
+# Create dummy variables for "Brick," "N2," and "N3"
+MidCity_data$BrickYes <- ifelse(MidCity_data$Brick == "Yes", 1, 0)
+MidCity_data$N2 <- ifelse(MidCity_data$Nbhd == 2, 1, 0)
+MidCity_data$N3 <- ifelse(MidCity_data$Nbhd == 3, 1, 0)
+
+model <- lm(Price ~ BrickYes + N2 + N3 + Offers + SqFt + Bedrooms + Bathrooms, data = MidCity_data)
+
+summary(model)
+
+coefficients <- coef(model)
+standard_errors <- sqrt(diag(vcov(model)))
+
+df <- df.residual(model)
+
+# Calculate the critical value for a two-tailed test at 95% confidence level
+critical_value <- qt(0.975, df)
+
+confidence_intervals <- data.frame(
+  Coefficient = coefficients,
+  Lower_Bound = coefficients - critical_value * standard_errors,
+  Upper_Bound = coefficients + critical_value * standard_errors
+)
+
+print(confidence_intervals)
+
+```
+
+From the above data, brick value is about 17297.350 which means that brick is a significant factor when pricing a house. Further, since the entire confidence interval is greater than zero we conclude that people pay a premium for a brick house.
+
+#### 2. Is there a premium for houses in neighborhood 3?
+
+Based on the regression output, the coefficient estimate for "N3" (indicating neighborhood 3) is 20681.04. The 95% confidence interval for this coefficient is [14446.33, 26915.75]. Since this interval does not include zero, we can conclude that "N3" is statistically significant at the 95% confidence level. Therefore, there is a premium for houses in neighborhood 3 when all other variables are held constant.
+
+#### 3. Is there an extra premium for brick houses in neighborhood 3?
+
+```{r,echo=FALSE, warning=FALSE}
+
+model_interaction <- lm(Price ~ BrickYes + N2 + N3 + Offers + SqFt + Bedrooms + Bathrooms + BrickYes:N3, data = MidCity_data)
+
+summary(model_interaction)
+
+coefficient_interaction <- coef(model_interaction)["BrickYes:N3"]
+
+if (abs(coefficient_interaction) > qnorm(0.975) * sqrt(vcov(model_interaction)["BrickYes:N3", "BrickYes:N3"])) {
+  cat("There is an extra premium for brick houses in neighborhood 3.\n")
+} else {
+  cat("There is no evidence of an extra premium for brick houses in neighborhood 3.\n")
+}
+
+```
+
+The positive coefficient value of 10181.577 (BrickYes:N3) indicates that, when a house is both a brick house and in neighborhood 3, there is an additional premium of approximately \$10181.577 compared to houses that are not brick houses and not in neighborhood 3, assuming all other variables are held constant.
+
+#### 4 - For the purposes of prediction could you combine the neighborhoods 1 and 2 into a single "older" neighborhood?
+
+```{r,echo=FALSE, warning=FALSE}
+
+MidCity_data$OlderNeighborhood <- ifelse(MidCity_data$Nbhd %in% c(1, 2), "Older", as.character(MidCity_data$Nbhd))
+
+MidCity_data$BrickYes <- ifelse(MidCity_data$Brick == "Yes", 1, 0)
+MidCity_data$Older <- ifelse(MidCity_data$OlderNeighborhood == "Older", 1, 0)
+MidCity_data$N3 <- ifelse(MidCity_data$Nbhd == 3, 1, 0)
+
+model_updated <- lm(Price ~ BrickYes + Older + N3 + Offers + SqFt + Bedrooms + Bathrooms, data = MidCity_data)
+
+summary(model_updated)
+
+```
+
+The regression output indicates that the coefficient for the variable "Older" is -21937.572, and its associated p-value is 9.39e-15. The p-value is significantly smaller than 0.05 (commonly used as the significance level), indicating strong evidence to reject the null hypothesis.
+
+Thus, we can conclude that the combined effect of neighborhoods 1 and 2 (represented by the variable "Older") is statistically significant in predicting house prices. Therefore, it is not reasonable to combine neighborhoods 1 and 2 into a single "older" neighborhood based on this regression analysis. The separate effect of these neighborhoods plays a significant role in predicting house prices. \newpage
+
+## PROBLEM 3: WHAT CAUSES WHAT??
+
+#### Listen to this podcast:<http://www.npr.org/blogs/money/2013/04/23/178635250/episode-453-what-causes-what>
+
+#### 1. Why can't I just get data from a few different cities and run the regression of "Crime" on "Police" to understand how more cops in the streets affect crime? ("Crime" refers to some measure of crime rate and "Police" measures the number of cops in a city)
+
+Studying the association between police presence and crime is a complex task due to the challenge of establishing causality. The available data cannot differentiate whether increased police presence leads to reduced crime or if higher crime rates prompt authorities to deploy more officers. In cross-city comparisons, we may observe a positive correlation between police and crime due to mayors reacting to crime surges by hiring additional law enforcement personnel.
+
+Conducting a controlled experiment, where police officers are randomly deployed on different days in a city, would be the ideal approach to ascertain the cause-and-effect relationship. However, ethical and practical constraints make such experiments unfeasible. Consequently, the causality dilemma remains a significant obstacle in this research domain. While data can reveal correlations between police presence and crime rates, inferring a direct causal link necessitates considering other influential factors and experimental designs currently unattainable. Thus, we must approach conclusions cautiously, recognizing the limitations of observational data in establishing definitive causal connections between police presence and crime.
+
+#### 2. How were the researchers from UPENN able to isolate this effect? Briefly describe their approach and discuss their result in the "Table 2" below.
+
+The researchers at UPENN conducted a natural experiment in Washington, DC, by examining crime data during days of high alert for potential terrorist attacks. On these days, the DC mayor is required by law to deploy more police in the streets, unrelated to crime considerations, creating an experimental scenario. To accurately analyze the impact of increased police presence on crime, the researchers controlled for subway ridership, which influences crime opportunities. The findings revealed that days with high alerts and more police had lower crime rates. This suggests that the additional police presence, rather than just reduced crime opportunities, had a significant negative effect on crime rates in the city.
+
+#### 3. Why did they have to control for METRO ridership? What was that trying to capture?
+
+Controlling for METRO ridership was necessary to account for the potential confounding effect of public movement on crime rates during days with increased police presence. It aimed to capture the influence of altered public behavior and changes in crime opportunities during high alert periods, allowing the researchers to isolate the specific impact of increased police presence on crime rates independently from the influence of reduced public presence.
+
+#### 4. In the next page, I am showing you "Table 4" from the research paper. Just focus on the first column of the table. Can you describe the model being estimated here? What is the conclusion?
+
+In Table 4, the first column represents a model estimating the reduction in crime on high-alert days, focusing on the National Mall area (District 1). The coefficient for "High Alert \# District 1" is **-2.621**, indicating a statistically significant negative association between high-alert days and crime reduction in District 1. In conclusion, the findings supports the hypothesis that heightened police presence during high-alert periods results in a significant decrease in crime rates in the National Mall area. The results are robust even after controlling for potential confounding factors such as METRO ridership.
+
+\newpage
+
+## PROBLEM 5: FINAL PROJECT
+
+**DATA SELECTION AND PROFILING**
+
+As a member of Group 5 in the "Airline Passenger Satisfaction" project, I played a significant role in various crucial tasks. First and foremost, I contributed to the project by identifying and procuring the dataset, followed by performing data profiling and meticulous data cleaning. This thorough data preparation was instrumental in enhancing the efficiency of our models.
+
+**ANALYSIS AND MODELLING**
+
+My primary and noteworthy contribution in the project was building a logistic regression model. By carefully constructing and training this model, I successfully obtained insightful results, allowing us to determine the best-suited model for our dataset.
+
+**PRESENTATION**
+
+Additionally, I actively participated in preparing the final presentation.
